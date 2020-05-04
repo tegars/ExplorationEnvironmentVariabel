@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace LearnEnvironmentVariabel.Controllers
@@ -11,29 +12,27 @@ namespace LearnEnvironmentVariabel.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
+        private readonly IConfiguration _configuration;
+        public WeatherForecastController(IConfiguration configuration)
         {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
-        {
-            _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        public IActionResult Get()
         {
-            var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            bool isChallenge = Helpers.EnvironmentVariable.IsChallenge(_configuration);
+            string domain = Helpers.EnvironmentVariable.Freshdesk(_configuration, "domain");
+            string password = Helpers.EnvironmentVariable.Freshdesk(_configuration, "password");
+
+
+            var EnvironmentVariabel = new
             {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            })
-            .ToArray();
+                isChallenge = isChallenge,
+                domain = domain,
+                password = password
+            };
+            return Ok(EnvironmentVariabel);
         }
     }
 }
